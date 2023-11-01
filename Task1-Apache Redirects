@@ -1,0 +1,33 @@
+# Task:
+
+1. httpd is already installed on app server 3. Configure Apache to listen on port 6300.
+
+
+2. Configure Apache to add some redirects as mentioned below:
+   a.) Redirect http://stapp03.stratos.xfusioncorp.com:<Port>/ to http://www.stapp03.stratos.xfusioncorp.com:<Port>/ i.e non www to www. This must be a permanent redirect i.e 301
+   b.) Redirect http://www.stapp03.stratos.xfusioncorp.com:<Port>/blog/ to http://www.stapp03.stratos.xfusioncorp.com:<Port>/news/. This must be a temporary redirect i.e 302.
+
+
+#Solution:
+
+1. [root@stapp03 ~]# cat /etc/httpd/conf/httpd.conf | grep -i Listen
+# Listen: Allows you to bind Apache to specific IP addresses and/or
+# Change this to Listen on specific IP addresses as shown below to 
+#Listen 12.34.56.78:80
+Listen 6300
+
+
+2. [root@stapp03 ~]# cat /etc/httpd/conf.d/main.conf 
+<VirtualHost *:6300>
+ServerName stapp03.stratos.xfusioncorp.com
+Redirect 301 / http://www.stapp03.stratos.xfusioncorp.com:6300/
+</VirtualHost>
+
+<VirtualHost *:6300>
+ServerName www.stapp03.stratos.xfusioncorp.com:6300/blog/
+Redirect 302 /blog/ http://www.stapp03.stratos.xfusioncorp.com:<Port>/news/
+</VirtualHost>
+
+
+Test: Do a test with curl command
+curl -Ik 
