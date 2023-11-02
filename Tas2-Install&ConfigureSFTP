@@ -1,0 +1,77 @@
+# Task:
+
+a. Create a SFTP user john and set its password to B4zNgHA7Ya. There is already a group called ftp, you can utilise the same.
+b. Password authentication should be enabled for this user.
+c. SFTP user should only be allowed to make SFTP connections.
+
+# Solution
+
+1. Create the user and set its password
+
+sudo useradd -m -s /bin/false -G ftp john
+sudo passwd john
+
+The -m flag creates the user's home directory if it doesn't exist, and the -s /bin/false flag sets the user's shell to /bin/false to prevent SSH access
+
+/bin/false will not allow user to shell for executing commands
+/bin/nologin and /usr/bin/nologin will not allow ssh connections
+
+2. Enable password authentication for the user:
+
+Open the SSH daemon configuration file. This file is typically located at /etc/ssh/sshd_config
+Find the line that says PasswordAuthentication and ensure it is set to yes. If it's commented out with a #, remove the # at the beginning of the line.
+
+PasswordAuthentication yes
+
+3. Restrict the user to SFTP connections only:
+
+Open the SSH daemon configuration file again
+vi /etc/ssh/sshd_config
+
+Add the following lines at the end of the file
+
+Match User john
+    AllowTcpForwarding no
+    X11Forwarding no
+    ForceCommand internal-sftp
+
+These lines configure SSH to only allow SFTP connections for the user "john" and disable other SSH features.
+Save the file and exit.
+
+# Match User john:
+{This line specifies that the following configuration settings apply only to the user named "john."
+AllowTcpForwarding no:
+
+Disables TCP forwarding. TCP forwarding is a feature that allows users to set up tunnels using the SSH connection. Setting it to no prevents the user from creating TCP tunnels.
+X11Forwarding no:
+
+Disables X11 forwarding. X11 forwarding allows users to run graphical applications remotely. Setting it to no prevents the user from running graphical applications over the SSH connection.
+ForceCommand internal-sftp:
+
+Forces the execution of a specific command when the user logs in. In this case, it forces the execution of the internal SFTP server (internal-sftp). This means that when the user "john" logs in, the only thing they can do is use the SFTP (Secure File Transfer Protocol) service. They won't have a shell for executing commands, which restricts them to SFTP operations only.
+This configuration is useful for creating a restricted environment for a specific user, limiting their capabilities to secure file transfers and preventing other potentially insecure activities such as tunneling or running graphical applications.
+
+When the user "john" logs in, the SSH server checks the sshd_config for Match conditions, and if the username matches "john," the specified settings are applied. Other users will not be affected by these settings.}
+
+
+
+
+sudo service ssh restart   # For systems using systemd
+systemctl restart sshd
+
+
+# Differences between differant shells
+
+1. /bin/false:
+
+When a user's shell is set to /bin/false, they are denied access to the system. Attempting to log in with a user whose shell is set to /bin/false results in an immediate logout. This is often used to create user accounts that are not intended for interactive login.
+
+2. /bin/nologin:
+
+Similar to /bin/false, setting a user's shell to /bin/nologin also denies interactive login. However, users can still use other services such as FTP or email. This binary is often used to create accounts that are allowed to use certain services but not log in directly.
+
+In practice, the choice between these options depends on the specific conventions of the Linux distribution you are using. Some systems may prefer /bin/false, while others use /bin/nologin, /usr/bin/nologin, or /usr/sbin/nologin. The functionality is essentially the same; they all prevent interactive login for the specified user.
+
+If you're unsure which one to use, you can check the system's documentation or conventions. Additionally, you can inspect the /etc/shells file to see which shells are configured on your system.
+
+
