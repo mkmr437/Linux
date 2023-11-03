@@ -1,0 +1,31 @@
+# Task
+A. Install tomcat server on App Server 1.
+b. Configure it to run on port 6300.
+c. There is a ROOT.war file on Jump host at location /tmp.
+Deploy it on this tomcat server and make sure the webpage works directly on base URL i.e curl http://stapp01:6300
+
+# Solution
+
+1. On App server 1
+Install tomcat
+yum install tomcat -y
+
+2. Configure tomcat to run on port 6300
+
+vi /etc/tomcat/server.xml or /usr/share/tomcat/server.xml
+Locate the <Connector> element and change the port attribute to 6300
+
+<Connector port="6300" protocol="HTTP/1.1"
+           connectionTimeout="20000"
+           redirectPort="8443" />
+
+Restart the tomcat systemctl restart tomcat
+
+3. Copy file from jumphost to app01
+scp /tmp/ROOT.war user@stapp01:/tmp
+
+Deploy ROOT file
+cp /tmp/ROOT.war /usr/share/tomcat/webapps or /var/lib/tomcat/webapps
+
+Verify with curl
+curl http://stapp01:6300
