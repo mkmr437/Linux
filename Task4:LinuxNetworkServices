@@ -1,0 +1,48 @@
+# Task
+Our monitoring tool has reported an issue in Stratos Datacenter. One of our app servers has an issue, as its Apache service is not reachable on port 6100 (which is the Apache port). The service itself could be down, the firewall could be at fault, or something else could be causing the issue.
+
+Use tools like telnet, netstat, etc. to find and fix the issue. Also make sure Apache is reachable from the jump host without compromising any security settings.
+
+Once fixed, you can test the same using command curl http://stapp01:6100 command from jump host.
+
+
+
+# Troubleshooting steps
+
+# Telnet from jump host 
+
+telnet stapp01 6100
+
+# Check if port is listening on Correct service
+
+netstat -tunlp #Post 6100 should listen on httpd service otherwise kill the 6100 port service 
+
+# Restart the httpd service
+
+systemctl restart httpd
+
+# check httpd configuration syntax
+httpd -t
+
+# depending on firewall service running on Os
+iptables -L -n -V
+
+# do a iptables flush to flush existing rules
+
+iptables -F
+
+
+
+# Apache or httpd
+
+Common things in httpd to look at
+
+/var/logs/httpd or /var/logs/apache2
+/etc/httpd/logs or /etc/apache/logs/
+access_log errot_log
+
+/etc/httpd/conf/httpd_conf
+Listen 6100
+
+ServerName Ipaddress:Port
+
